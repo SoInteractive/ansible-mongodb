@@ -26,43 +26,15 @@
     dest: /etc/mongod.conf
   notify: mongodb restart
 
-- name: Start mongodb
-  service:
-    name: mongod
-    state: started
-    enabled: yes
-
-#- name: Check if new authentication setup is already done
-#  shell: mongo {{ interface_address | default('localhost') }}/admin -u {{ mongo_admin_user }} -p {{ mongo_admin_pass }} --eval "printjson(db.getCollectionNames())"
-
-- name: Create admin user
-  mongodb_user: 
-    database: admin
-    name: "{{ mongodb_admin_user }}"
-    password: "{{ mongodb_admin_password }}"
-    roles: root
-    state: present
-  when: 
-
-- name: Create users
-  mongodb_user: 
-    database: "{{ item.value.db }}"
-    login_user: "{{ mongodb_admin_user }}"
-    login_password: "{{ mongodb_admin_password }}"
-    name: "{{ item.value.name }}"
-    password: "{{ item.value.pass }}"
-    roles: readWrite
-    state: present
-  with_dict: "{{ mongodb_users }}"
-  when: mongodb_users != {}
-
-#- name: Check connection
-#  shell: mongo {{ interface_address | default('localhost') }}/admin -u {{ mongo_admin_user }} -p {{ mongo_admin_pass }} --eval "printjson(db.getCollectionNames())"
-
 - name: Create keyfile
   template:
     src: keyfile.j2
     dest: "{{ mongodb_security_keyfile }}"
   when: mongodb_security_keyfile != None
 
-  
+- name: Start mongodb
+  service:
+    name: mongod
+    state: started
+    enabled: yes
+

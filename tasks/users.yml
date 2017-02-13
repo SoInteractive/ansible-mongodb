@@ -1,0 +1,23 @@
+---
+
+- name: Create admin user
+  mongodb_user: 
+    database: admin
+    name: "{{ mongodb_admin_user }}"
+    password: "{{ mongodb_admin_password }}"
+    roles: root
+    state: present
+  when: 
+
+- name: Create users
+  mongodb_user: 
+    database: "{{ item.value.db }}"
+    login_user: "{{ mongodb_admin_user }}"
+    login_password: "{{ mongodb_admin_password }}"
+    name: "{{ item.value.name }}"
+    password: "{{ item.value.pass }}"
+    roles: readWrite
+    state: present
+  with_dict: "{{ mongodb_users }}"
+  when: mongodb_users != {}
+
