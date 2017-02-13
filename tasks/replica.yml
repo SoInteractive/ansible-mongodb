@@ -1,0 +1,26 @@
+---
+- name: Flush handlers to restart mongodb if necessary
+  meta: flush_handlers
+
+- name: Check if replica if configured
+  command: mongo {{ mongodb_replica_name }} -- eval "rs.conf();"
+  register: replica_status
+
+- debug:
+    var: replica_status
+
+- name: Start replica set
+  command: mongo {{ mongodb_replica_name }} --eval "rs.initiate();"
+#  when: replica_status is not created
+
+- name: Add arbiter node
+  command: mongo {{ mongodb_replica_name }} --eval "rs.addArb(\"{{ mongodb_arbiter }}\");"
+  when: mongodb_replica_arbiter != None
+
+- name: Add data nodes
+  command: mongo {{ mongodb_replica_name }} --eval "rs.add(\"{{ item }}\");"
+  with_items: "{{ mongodb_replica_secondary_nodes }}"
+
+
+
+

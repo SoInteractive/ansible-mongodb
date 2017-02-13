@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: Pawel Krupa
+  description: MongoDB with optional replica set
+  company: Sointeractive
+  min_ansible_version: 1.6
+  platforms:
+#   - name: EL
+#     versions:
+#       - 7
+   - name: Ubuntu
+     versions:
+       - 14.04
+       - 16.04
+  galaxy_tags:
+   - database
+   - mongodb
+
+#dependencies:
+#  - { role: username.common }
+

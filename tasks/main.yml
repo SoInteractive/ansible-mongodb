@@ -1,0 +1,20 @@
+---
+- name: Gather variables for each operating system
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+  tags:
+    - always
+
+- include: install.yml
+
+- include: configure.yml
+
+- include: replica.yml
+  delegate_to: "{{ mongodb_replica_primary_node }}"
+  when: mongodb_replica_name != None and groups[mongodb_host_group] | length > 2 %}
+

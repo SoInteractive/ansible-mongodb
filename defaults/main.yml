@@ -1,0 +1,30 @@
+---
+mongodb_host_group: mongodb
+
+mongodb_version: 3.2
+#mongodb_full_version: 3.2.2
+
+mongodb_log_dir: /var/log/mongodb
+mongodb_database_dir: /var/lib/mongodb
+mongodb_system_user: mongodb
+mongodb_system_group: mongodb
+
+mongodb_admin_user: admin
+mongodb_admin_password: password
+
+mongodb_interface: "{{ ansible_default_ipv4.interface }}"
+mongodb_address: "{{ hostvars[inventory_hostname]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
+mongodb_port: 27017
+
+mongodb_security_keyfile: 
+mongodb_replica_name:
+mongodb_replica_arbiter:
+mongodb_replica_primary_node: "{{ groups[mongodb_host_group][0]['ipv4']['address'] }}"
+mongodb_replica_secondary_nodes:
+
+mongodb_users: {}
+#mongodb_users:
+#  example_user:
+#    name: "test"
+#    pass: "password"
+#    db: "example"

@@ -1,0 +1,17 @@
+---
+mongodb_dependencies:
+  - python-pymongo
+
+#mongodb_packages:
+#  - "mongodb-org={{ mongodb_full_version }}"
+#  - "mongodb-org-server={{ mongodb_full_version }}"
+#  - "mongodb-org-shell={{ mongodb_full_version }}"
+#  - "mongodb-org-mongos={{ mongodb_full_version }}"
+#  - "mongodb-org-tools={{ mongodb_full_version }}"
+
+mongodb_packages:
+  - "mongodb-org"
+  - "mongodb-org-server"
+  - "mongodb-org-shell"
+  - "mongodb-org-mongos"
+  - "mongodb-org-tools"
