@@ -2,6 +2,11 @@
 - name: Flush handlers to restart mongodb if necessary
   meta: flush_handlers
 
+- name: Wait for mongo
+  wait_for:
+    host: "{{ mongodb_address }}"
+    port: "{{ mongodb_port }}"
+
 - name: Check if replica if configured
   command: "mongo {{ mongodb_replica_name }} --eval 'rs.conf();'"
   register: replica_conf

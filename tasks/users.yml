@@ -1,4 +1,8 @@
 ---
+- name: Wait for mongo
+  wait_for:
+    host: "{{ mongodb_address }}"
+    port: "{{ mongodb_port }}"
 
 - name: Create admin user
   mongodb_user: 
