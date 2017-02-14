@@ -15,8 +15,10 @@
 - include: configure.yml
 
 - include: replica.yml
+  run_once: true
   delegate_to: "{{ mongodb_replica_primary_node }}"
-  when: mongodb_replica_name != None and groups[mongodb_host_group] | length > 2 %}
+  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
 
 - include: users.yml
-  delegate_to: groups[mongodb_host_group][0]
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"

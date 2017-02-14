@@ -1,5 +1,5 @@
 ---
-mongodb_host_group: mongodb
+mongodb_hosts_group: mongodb
 
 mongodb_version: 3.2
 #mongodb_full_version: 3.2.2
@@ -19,7 +19,7 @@ mongodb_port: 27017
 mongodb_security_keyfile: 
 mongodb_replica_name:
 mongodb_replica_arbiter:
-mongodb_replica_primary_node: "{{ groups[mongodb_host_group][0]['ipv4']['address'] }}"
+mongodb_replica_primary_node: "{{ groups[mongodb_host_group][0] }}"
 mongodb_replica_secondary_nodes:
 
 mongodb_users: {}

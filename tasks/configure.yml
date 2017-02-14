@@ -38,3 +38,7 @@
     state: started
     enabled: yes
 
+- name: Wait for mongo
+  wait_for:
+    host: "{{ mongodb_address }}"
+    port: "{{ mongodb_port }}"

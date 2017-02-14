@@ -23,7 +23,7 @@ security:
   authorization: enabled
 {% endif %}
 
-{% if mongodb_replica_name != None and groups[mongodb_host_group] | length > 2 %}
+{% if mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2 %}
 replication:
   replSetName: {{ mongodb_replica_name }}
 {% endif %}

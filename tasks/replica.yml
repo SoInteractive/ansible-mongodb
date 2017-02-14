@@ -3,22 +3,23 @@
   meta: flush_handlers
 
 - name: Check if replica if configured
-  command: mongo {{ mongodb_replica_name }} -- eval "rs.conf();"
-  register: replica_status
-
-- debug:
-    var: replica_status
+  command: "mongo {{ mongodb_replica_name }} --eval 'rs.conf();'"
+  register: replica_conf
+  ignore_errors: True
 
 - name: Start replica set
-  command: mongo {{ mongodb_replica_name }} --eval "rs.initiate();"
-#  when: replica_status is not created
+  command: "mongo {{ mongodb_replica_name }} --eval 'rs.initiate();'"
+  when: "'no replset config has been received' in replica_conf.stdout"
+
+- set_fact:
+    arbiter_address: "{{ hostvars[mongodb_replica_arbiter]['ansible_' + mongodb_interface]['ipv4']['address'] }}" 
 
 - name: Add arbiter node
-  command: mongo {{ mongodb_replica_name }} --eval "rs.addArb(\"{{ mongodb_arbiter }}\");"
+  command: "mongo {{ mongodb_replica_name }} --eval 'rs.addArb(\"{{ arbiter_address }}\");'"
   when: mongodb_replica_arbiter != None
 
 - name: Add data nodes
-  command: mongo {{ mongodb_replica_name }} --eval "rs.add(\"{{ item }}\");"
+  command: "mongo {{ mongodb_replica_name }} --eval 'rs.add(\"{{ hostvars[item]['ansible_' + mongodb_interface]['ipv4']['address'] }}\");'"
   with_items: "{{ mongodb_replica_secondary_nodes }}"
 
 
