@@ -9,6 +9,10 @@
   apt_key:
     keyserver: hkp://keyserver.ubuntu.com:80
     id: EA312927
+  environment:
+    http_proxy: "{{ http_proxy | default('') }}"
+    https_proxy: "{{ https_proxy | default('') }}"
+
   when: ansible_pkg_mgr == "apt"
 
 - name: Add mongodb repository [Ubuntu]
