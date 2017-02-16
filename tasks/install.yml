@@ -12,7 +12,6 @@
   environment:
     http_proxy: "{{ http_proxy | default('') }}"
     https_proxy: "{{ https_proxy | default('') }}"
-
   when: ansible_pkg_mgr == "apt"
 
 - name: Add mongodb repository [Ubuntu]
@@ -32,3 +31,7 @@
     name: "{{ item }}"
     state: installed
   with_items: "{{ mongodb_packages }}"
+
+- name: Update systemd
+  command: systemctl daemon-reload
+  when: ansible_service_mgr == "systemd"
