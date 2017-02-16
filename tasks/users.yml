@@ -23,5 +23,4 @@
     roles: readWrite
     state: present
   with_dict: "{{ mongodb_users }}"
-  when: mongodb_users != {}
 
