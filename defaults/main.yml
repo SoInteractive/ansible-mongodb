@@ -22,6 +22,11 @@ mongodb_replica_arbiter:
 mongodb_replica_primary_node: "{{ groups[mongodb_host_group][0]['ansible_host'] }}"
 mongodb_replica_secondary_nodes:
 
+# PLAIN
+# MONGODB-CR
+# SCRAM-SHA-1
+mongodb_authentication: MONGODB-CR
+
 mongodb_users: {}
 #mongodb_users:
 #  example_user:
