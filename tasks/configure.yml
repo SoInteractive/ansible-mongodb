@@ -30,6 +30,9 @@
   template:
     src: keyfile.j2
     dest: "{{ mongodb_security_keyfile }}"
+    owner: "{{ mongodb_system_user }}"
+    group: "{{ mongodb_system_group }}"
+    mode: 0700
   when: mongodb_security_keyfile != None
 
 - name: Start mongodb
