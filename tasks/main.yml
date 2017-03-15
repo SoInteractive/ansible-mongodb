@@ -22,3 +22,6 @@
 - include: users.yml
   run_once: true
   delegate_to: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_host'] }}"
+
+- include: metrics.yml
+
