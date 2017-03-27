@@ -6,15 +6,16 @@
     password: "{{ mongodb_admin_password }}"
     roles: userAdmin,clusterAdmin,userAdminAnyDatabase
     state: present
+  ignore_errors: true
 
-- name: Create users
-  mongodb_user: 
-    database: "{{ item.value.db }}"
-    login_user: "{{ mongodb_admin_user }}"
-    login_password: "{{ mongodb_admin_password }}"
-    name: "{{ item.value.name }}"
-    password: "{{ item.value.pass }}"
-    roles: readWrite
-    state: present
-  with_dict: "{{ mongodb_users }}"
+#- name: Create users
+#  mongodb_user: 
+#    database: "{{ item.value.db }}"
+#    login_user: "{{ mongodb_admin_user }}"
+#    login_password: "{{ mongodb_admin_password }}"
+#    name: "{{ item.value.name }}"
+#    password: "{{ item.value.pass }}"
+#    roles: readWrite
+#    state: present
+#  with_dict: "{{ mongodb_users }}"
 

@@ -1,9 +1,13 @@
 ---
+# Pauses are crucial
+- pause:
+    seconds: 10
+
 - meta: flush_handlers
 
 - pause:
     prompt: "Wait for mongo"
-    seconds: 5
+    seconds: 10
 
 - name: Check if replica is configured
   command: "mongo {{ mongodb_replica_name }} --eval 'rs.conf();'"

@@ -21,6 +21,13 @@
 
 - include: configure.yml
 
+#- include: auth_method.yml
+##  run_once: true
+##  delegate_to: "{{ mongodb_main_node }}"
+#  when:
+#    - mongodb_authentication != "SCRAM-SHA-1"
+#    - not mongod_config.stat.exists
+
 - include: replica.yml
   when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
   run_once: true

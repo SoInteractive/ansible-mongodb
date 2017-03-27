@@ -24,9 +24,6 @@
     path: /etc/mongo_key
   register: mongod_config
 
-- debug:
-    var: mongod_config
-
 - name: Create initial configuration
   template:
     src: mongod_initial.conf.j2
