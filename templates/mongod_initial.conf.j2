@@ -10,16 +10,9 @@ storage:
   journal:
     enabled: true
 
-#processManagement:
-#  fork: true
-
 net:
   port: {{ mongodb_port }}
   bindIp: localhost,{{ mongodb_address }}
-
-security:
-  keyFile: /etc/mongo_key
-  authorization: enabled
 
 {% if mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2 %}
 replication:

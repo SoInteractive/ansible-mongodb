@@ -16,16 +16,15 @@ mongodb_interface: "{{ ansible_default_ipv4.interface }}"
 mongodb_address: "{{ hostvars[inventory_hostname]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
 mongodb_port: 27017
 
-mongodb_security_keyfile: 
 mongodb_replica_name:
 mongodb_replica_arbiter:
 mongodb_replica_primary_node: "{{ groups[mongodb_host_group][0]['ansible_host'] }}"
-mongodb_replica_secondary_nodes:
+mongodb_replica_secondary_nodes: []
 
 # PLAIN
 # MONGODB-CR
 # SCRAM-SHA-1
-mongodb_authentication: MONGODB-CR
+#mongodb_authentication: SCRAM-SHA-1
 
 mongodb_users: {}
 #mongodb_users:
