@@ -20,24 +20,17 @@
 - name: Update locale
   command: update-locale LC_ALL=en_US.UTF-8
 
-- name: Create default configuration
+- stat:
+    path: /etc/mongo_key
+  register: mongod_config
+
+- debug:
+    var: mongod_config
+
+- name: Create initial configuration
   template:
-    src: mongod.conf.j2
+    src: mongod_initial.conf.j2
     dest: /etc/mongod.conf
-  notify: mongodb restart
-
-- name: Create keyfile
-  template:
-    src: keyfile.j2
-    dest: "{{ mongodb_security_keyfile }}"
-    owner: "{{ mongodb_system_user }}"
-    group: "{{ mongodb_system_group }}"
-    mode: 0700
-  when: mongodb_security_keyfile != None
-
-- name: Start mongodb
-  service:
-    name: mongod
-    state: started
-    enabled: yes
+  notify: restart mongodb
+  when: not mongod_config.stat.exists
 

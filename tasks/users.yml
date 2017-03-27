@@ -1,21 +1,11 @@
 ---
-#- name: Wait for mongo
-#  wait_for:
-#    host: "{{ mongodb_address }}"
-#    port: "{{ mongodb_port }}"
-
-- pause:
-    prompt: "Wait for mongo"
-    seconds: 5
-
-- name: Create admin user
+- name: Ensure admin exists
   mongodb_user: 
     database: admin
     name: "{{ mongodb_admin_user }}"
     password: "{{ mongodb_admin_password }}"
-    roles: root
+    roles: userAdmin,clusterAdmin,userAdminAnyDatabase
     state: present
-  when: 
 
 - name: Create users
   mongodb_user: 

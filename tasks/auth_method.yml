@@ -1,0 +1,58 @@
+---
+- set_fact:
+    schema_version: 5
+  when: mongodb_authentication == "SCRAM-SHA-1"
+
+- set_fact:
+    schema_version: 3
+  when: mongodb_authentication == "MONGODB-CR"
+
+- name: Stop all nodes
+  service:
+    name: mongod
+    state: stopped
+  notify: restart mongodb
+
+- block:
+  - name: Backup configuration
+    copy:
+      remote_src: true
+      src: /etc/mongod.conf
+      dest: /etc/mongod.conf.bak
+
+  - name: Import temporary config
+    template:
+      src: mongod_insecure.conf.j2
+      dest: /etc/mongod.conf
+
+  - name: Start primary node
+    service:
+      name: mongod
+      state: started
+
+  - pause:
+      prompt: "Wait for mongo"
+      seconds: 5
+
+  - name: Change mongo auth method
+    command: "mongo admin --eval 'var schema = db.system.version.findOne({\"_id\" : \"authSchema\"}); schema.currentVersion = {{ schema_version }}; db.system.version.save(schema);'"
+
+  - name: Stop primary node
+    service:
+      name: mongod
+      state: stopped
+
+  - name: Revert to original config
+    copy:
+      remote_src: true
+      src: /etc/mongod.conf.bak
+      dest: /etc/mongod.conf
+      owner: "{{ mongodb_system_user }}"
+      group: "{{ mongodb_system_group }}"
+      mode: 0755
+
+  delegate_to: "{{ mongodb_main_node }}"
+#  delegate_to: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_host'] }}"
+
+- meta: flush_handlers
+

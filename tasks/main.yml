@@ -10,18 +10,27 @@
   tags:
     - always
 
+- set_fact: 
+    mongodb_main_node: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_host'] }}"
+
+- set_fact:
+    mongodb_main_node: "{{ hostvars[mongodb_replica_primary_node]['ansible_host'] }}"
+  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
+
 - include: install.yml
 
 - include: configure.yml
 
 - include: replica.yml
-  run_once: true
-  delegate_to: "{{ hostvars[mongodb_replica_primary_node]['ansible_host'] }}"
   when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
+  run_once: true
+  delegate_to: "{{ mongodb_main_node }}"
 
 - include: users.yml
   run_once: true
-  delegate_to: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_host'] }}"
+  delegate_to: "{{ mongodb_main_node  }}"
+
+- include: security.yml
 
 - include: metrics.yml
 
