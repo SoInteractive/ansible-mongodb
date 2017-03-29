@@ -28,6 +28,10 @@
   template:
     src: mongod_initial.conf.j2
     dest: /etc/mongod.conf
-  notify: restart mongodb
   when: not mongod_config.stat.exists
 
+- name: Enable mongo service
+  service:
+    name: mongod
+    state: started
+    enable: yes
