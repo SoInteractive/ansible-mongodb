@@ -15,7 +15,8 @@
     login_password: "{{ mongodb_admin_password }}"
     name: "{{ item.value.name }}"
     password: "{{ item.value.pass }}"
-    roles: readWrite
+    roles: "{{ item.value.roles | default('readWrite') }}"
     state: present
   with_dict: "{{ mongodb_users }}"
+  when: mongodb_create_users
 

@@ -27,6 +27,7 @@ mongodb_replica_secondary_nodes: []
 #mongodb_authentication: SCRAM-SHA-1
 #mongodb_authentication: MONGODB-CR
 
+mongodb_create_users: true
 mongodb_users: {}
 #mongodb_users:
 #  example_user:
