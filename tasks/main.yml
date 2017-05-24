@@ -40,4 +40,4 @@
 - include: security.yml
 
 - include: metrics.yml
-
+  when: mongodb_metrics
