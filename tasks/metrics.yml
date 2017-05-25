@@ -6,30 +6,17 @@
   with_items:
     - curl
 
-- name: create mongodb_exporter system group
-  group:
-    name: "{{ mongodb_exporter_group }}"
-    system: yes
-    state: present
-
-- name: create mongodb_exporter system user
-  user:
-    name: "{{ mongodb_exporter_user }}"
-    system: yes
-    shell: "/sbin/nologin"
-    group: "{{ mongodb_exporter_group }}"
-    createhome: no
-
 - name: create mongodb_exporter directories
   file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ mongodb_exporter_user }}"
-    group: "{{ mongodb_exporter_group }}"
+    owner: "{{ mongodb_system_user }}"
+    group: "{{ mongodb_system_group }}"
     mode: 0755
   with_items:
     - "{{ mongodb_exporter_root_dir }}"
     - "{{ mongodb_exporter_dist_dir }}"
+    - "{{ mongodb_exporter_bin_dir }}"
     - "{{ mongodb_exporter_log_dir }}"
 
 - name: download mongodb_exporter binary to local folder
@@ -38,28 +25,18 @@
     url: "{{ mongodb_exporter_url }}"
     dest: /tmp/mongodb_exporter-linux-amd64
     validate_certs: no
-#    force: true
   run_once: true
   delegate_to: localhost
 
 - name: propagate mongodb_exporter binary
   copy:
-   src: /tmp/mongodb_exporter-linux-amd64.tar.gz
+   src: /tmp/mongodb_exporter-linux-amd64
    dest: "{{ mongodb_exporter_dist_dir }}"
 
-- name: update group and owner for files
-  file:
-    path: "{{ mongodb_exporter_release_name }}"
-    state: directory
-    recurse: yes
-    owner: "{{ mongodb_exporter_user}}"
-    group: "{{ mongodb_exporter_group }}"
-  when: mongodb_exporter_updated | changed
-  
 - name: create symlink to the current release
   file:
-    src: "{{ mongodb_exporter_dist_dir }}/{{ mongodb_exporter_release_name }}"
-    path: "{{ mongodb_exporter_root_dir }}/current"
+    src: "{{ mongodb_exporter_dist_dir }}/mongodb_exporter-linux-amd64"
+    path: "{{ mongodb_exporter_bin_dir }}"
     state: link
 
 - name: create systemd service unit
@@ -76,5 +53,3 @@
   service:
     name: mongodb_exporter
     enabled: yes
-
-

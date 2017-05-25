@@ -8,9 +8,3 @@
   service:
     name: mongodb_exporter
     state: restarted
-
-- name: reload mongodb_exporter
-  service:
-    name: mongodb_exporter
-    state: reloaded
-
