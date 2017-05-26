@@ -18,7 +18,7 @@ mongodb_port: 27017
 
 mongodb_replica_name:
 mongodb_replica_arbiter:
-mongodb_replica_primary_node: "{{ groups[mongodb_host_group][0]['ansible_host'] }}"
+mongodb_replica_primary_node: "{{ groups[mongodb_hosts_group][0]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
 mongodb_replica_secondary_nodes: []
 
 # PLAIN
