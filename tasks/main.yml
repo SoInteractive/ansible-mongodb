@@ -11,10 +11,10 @@
     - always
 
 - set_fact: 
-    mongodb_main_node: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_host'] }}"
+    mongodb_main_node: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
 
 - set_fact:
-    mongodb_main_node: "{{ hostvars[mongodb_replica_primary_node]['ansible_host'] }}"
+    mongodb_main_node: "{{ hostvars[mongodb_replica_primary_node]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
   when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
 
 - include: install.yml
