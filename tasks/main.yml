@@ -10,12 +10,12 @@
   tags:
     - always
 
-- set_fact: 
-    mongodb_main_node: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
-
-- set_fact:
-    mongodb_main_node: "{{ hostvars[mongodb_replica_primary_node]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
-  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
+#- set_fact: 
+#    mongodb_main_node: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
+#
+#- set_fact:
+#    mongodb_main_node: "{{ hostvars[mongodb_replica_primary_node]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
+#  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
 
 - include: install.yml
 
@@ -31,11 +31,11 @@
 - include: replica.yml
   when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
   run_once: true
-  delegate_to: "{{ mongodb_main_node }}"
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
 
 - include: users.yml
   run_once: true
-  delegate_to: "{{ mongodb_main_node  }}"
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
 
 - include: security.yml
 
