@@ -4,6 +4,9 @@
     name: mongod
     state: restarted
 
+- name: reload systemd
+  command: systemctl daemon-reload
+
 - name: restart mongodb_exporter
   service:
     name: mongodb_exporter

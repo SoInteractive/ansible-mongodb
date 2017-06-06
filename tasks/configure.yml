@@ -10,17 +10,8 @@
     - "{{ mongodb_database_dir }}"
     - "{{ mongodb_log_dir }}"
 
-# TODO remove locale?
-- name: Set default locale
-  lineinfile:
-    dest: /etc/default/locale
-    regexp: "LC_ALL"
-    line: 'LC_ALL="en_US.UTF-8"'
-
-- name: Update locale
-  command: update-locale LC_ALL=en_US.UTF-8
-
-- stat:
+- name: Check for mongo keyfile
+  stat:
     path: /etc/mongo_key
   register: mongod_config
 
@@ -29,9 +20,7 @@
     src: mongod_initial.conf.j2
     dest: /etc/mongod.conf
   when: not mongod_config.stat.exists
+  notify:
+    - restart mongodb
 
-- name: Enable mongo service
-  service:
-    name: mongod
-    state: started
-    enabled: yes
+- meta: flush_handlers

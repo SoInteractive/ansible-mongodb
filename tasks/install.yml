@@ -33,6 +33,7 @@
     state: installed
   with_items: "{{ mongodb_packages }}"
 
-- name: Update systemd
-  command: systemctl daemon-reload
-  when: ansible_service_mgr == "systemd"
+- name: Enable mongo service
+  service:
+    name: mongod
+    enabled: yes

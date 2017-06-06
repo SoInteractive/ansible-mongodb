@@ -13,4 +13,3 @@
   notify: restart mongodb
 
 - meta: flush_handlers
-

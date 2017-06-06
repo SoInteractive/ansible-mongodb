@@ -10,7 +10,7 @@
   tags:
     - always
 
-#- set_fact: 
+#- set_fact:
 #    mongodb_main_node: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
 #
 #- set_fact:

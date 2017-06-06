@@ -1,11 +1,4 @@
 ---
-- name: install needed packages
-  package:
-    name: "{{ item }}"
-    state: latest
-  with_items:
-    - curl
-
 - name: create mongodb_exporter directories
   file:
     path: "{{ item }}"
@@ -36,7 +29,7 @@
 - name: create symlink to the current release
   file:
     src: "{{ mongodb_exporter_dist_dir }}/mongodb_exporter-linux-amd64"
-    path: "{{ mongodb_exporter_bin_dir }}"
+    dest: "{{ mongodb_exporter_bin_dir }}/current"
     state: link
 
 - name: create systemd service unit

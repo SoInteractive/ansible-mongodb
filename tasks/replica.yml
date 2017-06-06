@@ -1,11 +1,13 @@
 ---
 # Pauses are crucial
-- pause:
+- name: Wait a moment
+  pause:
     seconds: 10
 
 - meta: flush_handlers
 
-- pause:
+- name: Wait a little bit more
+  pause:
     prompt: "Wait for mongo"
     seconds: 10
 
@@ -13,18 +15,20 @@
   command: "mongo {{ mongodb_replica_name }} --eval 'rs.conf();'"
   register: replica_conf
   ignore_errors: True
+  tags: skip_ansible_lint
 
 - block:
   - name: Start replica set
     command: "mongo {{ mongodb_replica_name }} --eval 'rs.initiate();'"
-  
-  - set_fact:
-      arbiter_address: "{{ hostvars[mongodb_replica_arbiter]['ansible_' + mongodb_interface]['ipv4']['address'] }}" 
-  
+
+  - name: Get arbiter address
+    set_fact:
+      arbiter_address: "{{ hostvars[mongodb_replica_arbiter]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
+
   - name: Add arbiter node
     command: "mongo {{ mongodb_replica_name }} --eval 'rs.addArb(\"{{ arbiter_address }}\");'"
     when: mongodb_replica_arbiter != None
- 
+
 #  - set_fact:
 #      mongodb_replica_secondary_nodes:
 #    when: mongodb_replica_secondary_nodes == None
@@ -32,10 +36,9 @@
   - name: Add data nodes
     command: "mongo {{ mongodb_replica_name }} --eval 'rs.add(\"{{ hostvars[item]['ansible_' + mongodb_interface]['ipv4']['address'] }}\");'"
     with_items: "{{ mongodb_replica_secondary_nodes }}"
-  
-  - pause:
-      prompt: "Wait for election to finish" 
+
+  - name: Wait for election to finish
+    pause:
       seconds: 5
 
   when: "'no replset config has been received' in replica_conf.stdout"
-

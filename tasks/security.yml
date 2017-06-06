@@ -12,4 +12,3 @@
     owner: "{{ mongodb_system_user }}"
     group: "{{ mongodb_system_group }}"
     mode: 0700
-

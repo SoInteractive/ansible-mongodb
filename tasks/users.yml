@@ -1,6 +1,6 @@
 ---
 - name: Ensure admin exists
-  mongodb_user: 
+  mongodb_user:
     database: admin
     name: "{{ mongodb_admin_user }}"
     password: "{{ mongodb_admin_password }}"
@@ -9,7 +9,7 @@
   ignore_errors: true
 
 - name: Create users
-  mongodb_user: 
+  mongodb_user:
     database: "{{ item.value.db }}"
     login_user: "{{ mongodb_admin_user }}"
     login_password: "{{ mongodb_admin_password }}"
@@ -19,4 +19,3 @@
     state: present
   with_dict: "{{ mongodb_users }}"
   when: mongodb_create_users
-

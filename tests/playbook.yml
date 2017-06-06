@@ -1,0 +1,17 @@
+---
+- hosts: all
+  tasks:
+    - name: install testing suite
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - iproute
+        - net-tools
+
+- hosts: all
+  roles:
+    - mongodb
+  vars:
+    mongodb_address: "127.0.0.1:27017"
+    mongodb_exporter_web_listen_address: "127.0.0.1:9001"

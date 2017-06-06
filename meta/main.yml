@@ -1,21 +1,17 @@
 ---
 galaxy_info:
   author: Pawel Krupa, Roman Demachkovych (mongodb-exporter)
-  description: MongoDB with optional replica set
+  description: Provision one- or multi-node mongodb cluster
   company: Sointeractive
-  min_ansible_version: 1.6
+  license: MIT
+  min_ansible_version: 2.0
   platforms:
-#   - name: EL
-#     versions:
-#       - 7
-   - name: Ubuntu
-     versions:
-       - 14.04
-       - 16.04
-  galaxy_tags:
-   - database
-   - mongodb
+  - name: Ubuntu
+    versions:
+    - xenial
+  - name: EL
+    versions:
+    - 7
+  galaxy_tags: []
 
-#dependencies:
-#  - { role: username.common }
-
+dependencies: []
