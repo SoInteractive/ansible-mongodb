@@ -29,7 +29,9 @@
 - name: create symlink to the current release
   file:
     src: "{{ mongodb_exporter_dist_dir }}/mongodb_exporter-linux-amd64"
-    dest: "{{ mongodb_exporter_bin_dir }}/current"
+    dest: "{{ mongodb_exporter_bin_dir }}/mongodb_exporter"
+    owner: "{{ mongodb_system_user }}"
+    group: "{{ mongodb_system_group }}"
     state: link
 
 - name: create systemd service unit
@@ -40,6 +42,7 @@
     group: root
     mode: 0644
   notify:
+    - reload systemd
     - restart mongodb_exporter
 
 - name: ensure mongodb_exporter service is enabled
