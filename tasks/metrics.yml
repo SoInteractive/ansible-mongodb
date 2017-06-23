@@ -32,6 +32,7 @@
     dest: "{{ mongodb_exporter_bin_dir }}/mongodb_exporter"
     owner: "{{ mongodb_system_user }}"
     group: "{{ mongodb_system_group }}"
+    mode: 0755
     state: link
 
 - name: create systemd service unit
