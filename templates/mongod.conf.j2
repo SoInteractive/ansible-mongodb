@@ -15,7 +15,7 @@ storage:
 
 net:
   port: {{ mongodb_port }}
-  bindIp: localhost,{{ mongodb_address }}
+  bindIp: localhost{{ "," + mongodb_address if not mongodb_address.startswith('127') else "" }}
 
 security:
   keyFile: /etc/mongo_key
