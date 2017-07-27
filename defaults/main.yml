@@ -30,10 +30,9 @@ mongodb_replica_secondary_nodes: []
 #mongodb_authentication: MONGODB-CR
 
 mongodb_create_users: true
-mongodb_users: {}
+mongodb_users: []
 #mongodb_users:
-#  example_user:
-#    name: "test"
+#  - name: "test"
 #    pass: "password"
 #    db: "example"
 #
