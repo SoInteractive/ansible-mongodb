@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  author: Pawel Krupa, Roman Demachkovych (mongodb-exporter)
+  author: Pawel Krupa, Roman Demachkovych
   description: Provision one- or multi-node mongodb cluster
   company: Sointeractive
   license: MIT

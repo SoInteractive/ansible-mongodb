@@ -1,7 +1,13 @@
 ---
+- name: Get MongoDB container IP address
+  become: yes
+  command: docker inspect --format '\\{\\{ .NetworkSettings.IPAddress \\}\\}' mongo
+  register: mongodb_container_ip
+
 - name: Ensure admin exists
   mongodb_user:
     database: admin
+    login_host: "{{ mongodb_container_ip }}"
     login_port: "{{ mongodb_port }}"
     name: "{{ mongodb_admin_user }}"
     password: "{{ mongodb_admin_password }}"
@@ -12,6 +18,8 @@
 - name: Create users
   mongodb_user:
     database: "{{ item.db }}"
+    login_host: "{{ mongodb_container_ip }}"
+    login_port: "{{ mongodb_port }}"
     login_user: "{{ mongodb_admin_user }}"
     login_password: "{{ mongodb_admin_password }}"
     name: "{{ item.name }}"

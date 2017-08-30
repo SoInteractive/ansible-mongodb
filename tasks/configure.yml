@@ -10,10 +10,10 @@
     - "{{ mongodb_database_dir }}"
     - "{{ mongodb_log_dir }}"
 
-- name: Check for mongo keyfile
-  stat:
-    path: /etc/mongo_key
-  register: mongod_config
+#- name: Check for mongo keyfile
+#  stat:
+#    path: /etc/mongo_key
+#  register: mongod_config
 
 - name: Create initial configuration
   template:

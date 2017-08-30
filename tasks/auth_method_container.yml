@@ -1,0 +1,13 @@
+---
+- set_fact:
+    schema_version: 5
+  when: mongodb_authentication == "SCRAM-SHA-1"
+
+- set_fact:
+    schema_version: 3
+  when: mongodb_authentication == "MONGODB-CR"
+
+- name: Change mongo auth method
+  docker: name=mongo command="{{ item }}"
+  with_items:
+    - "mongo admin --eval 'var schema = db.system.version.findOne({\"_id\" : \"authSchema\"}); schema.currentVersion = 3; db.system.version.save(schema);'"

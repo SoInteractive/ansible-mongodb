@@ -1,0 +1,10 @@
+---
+- name: Secure mongo installation
+  template:
+    src: mongod.conf.j2
+    dest: "/var/lib/docker/volumes/{{ mongodb_root_dir }}/_data/mongod.conf.orig"
+
+- name: Create keyfile
+  template:
+    src: keyfile.j2
+    dest: "/var/lib/docker/volumes/{{ mongodb_root_dir }}/_data/mongo_key"

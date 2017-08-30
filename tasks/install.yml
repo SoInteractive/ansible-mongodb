@@ -32,7 +32,7 @@
     name: "{{ item }}"
     state: installed
   with_items: "{{ mongodb_packages }}"
-
+ 
 - name: Enable mongo service
   service:
     name: mongod

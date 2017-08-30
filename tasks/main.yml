@@ -10,16 +10,18 @@
   tags:
     - always
 
-#- set_fact:
-#    mongodb_main_node: "{{ hostvars[groups[mongodb_hosts_group][0]]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
-#
-#- set_fact:
-#    mongodb_main_node: "{{ hostvars[mongodb_replica_primary_node]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
-#  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
+- block:
+    - include: configure_container.yml
+    - include: install_container.yml
+#    - include: auth_method_container.yml
+    - include: users_container.yml
+  when: mongodb_method_install != "binary"
 
-- include: install.yml
-
-- include: configure.yml
+- block:
+    - include: install.yml
+    - include: configure.yml
+    - include: users.yml
+  when: mongodb_method_install = "binary"
 
 #- include: auth_method.yml
 ##  run_once: true
@@ -28,16 +30,16 @@
 #    - mongodb_authentication != "SCRAM-SHA-1"
 #    - not mongod_config.stat.exists
 
-- include: replica.yml
-  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
-  run_once: true
-  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+#- include: replica.yml
+#  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
+#  run_once: true
+#  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
 
-- include: users.yml
-  run_once: true
-  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+#- include: users_container.yml
+#  run_once: true
+#  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
 
-- include: security.yml
+#- include: security_container.yml
 
-- include: metrics.yml
-  when: mongodb_metrics
+#- include: metrics.yml
+#  when: mongodb_metrics

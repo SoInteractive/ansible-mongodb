@@ -1,0 +1,12 @@
+---
+- name: Download and run MongoDB instance
+  docker_container:
+    name: mongo 
+    image: "mongo:{{ mongodb_version }}"
+    state: present
+    restart_policy: unless-stopped
+    ports: 
+      - "{{ mongodb_port }}:27017"
+    volumes:
+      - "/opt/mongodb:/data/db:rw"
+      - "/opt/mongodb/mongod.conf.orig:/etc/mongod.conf.orig:ro"
