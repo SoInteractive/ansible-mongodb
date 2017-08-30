@@ -14,15 +14,14 @@
 
 - name: restart Mongodb_container
   docker_container:
-    name: mongo 
+    name: mongo
     image: "mongo:{{ mongodb_version }}"
     state: started
     restart: yes
 #    recreate: yes
     restart_policy: unless-stopped
-    ports: 
-      - "{{ mongodb_port }}:27017"
+    ports: "{{ mongodb_port }}:27017"
     volumes:
       - "/var/lib/docker/volumes/mongodb:/data/db:rw"
       - "/var/lib/docker/volumes/mongodb/mongod.conf.orig:/etc/mongod.conf.orig:ro"
-  when: mongodb_method_install ==  "container"
+  when: mongodb_method_install !=  "binary"

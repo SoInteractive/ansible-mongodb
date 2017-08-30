@@ -15,9 +15,7 @@ docker:
 #      image: centos/systemd
 #      image_version: latest
 #      privileged: true
-  - name: mongo
-    image: jpetazzo/dind
-    image_version: latest
-    privileged: True
-    port_bindings:
-      27017:27017
+    - name: mongo
+      image: jpetazzo/dind
+      image_version: latest
+      privileged: True

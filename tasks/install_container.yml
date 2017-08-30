@@ -1,12 +1,23 @@
 ---
+#- name: Make sure data dir exist
+#  file:
+#    path: /opt/mongodb
+#    state: directory
+#    group: docker
+#    mode: 0777
+
+- name: Make sure that docker is installed and running
+  service:
+    name: docker
+    state: started
+
 - name: Download and run MongoDB instance
   docker_container:
-    name: mongo 
+    name: mongo
     image: "mongo:{{ mongodb_version }}"
     state: present
     restart_policy: unless-stopped
-    ports: 
-      - "{{ mongodb_port }}:27017"
+    ports: "{{ mongodb_port }}:27017"
     volumes:
       - "/opt/mongodb:/data/db:rw"
       - "/opt/mongodb/mongod.conf.orig:/etc/mongod.conf.orig:ro"

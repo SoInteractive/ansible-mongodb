@@ -1,8 +1,9 @@
 ---
 - name: Get MongoDB container IP address
-  become: yes
+#  become: yes
   command: docker inspect --format '\\{\\{ .NetworkSettings.IPAddress \\}\\}' mongo
   register: mongodb_container_ip
+  changed_when: false
 
 - name: Ensure admin exists
   mongodb_user:
