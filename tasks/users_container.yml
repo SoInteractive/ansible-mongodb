@@ -1,31 +1,89 @@
 ---
-- name: Get MongoDB container IP address
-#  become: yes
-  command: docker inspect --format '\\{\\{ .NetworkSettings.IPAddress \\}\\}' mongo
-  register: mongodb_container_ip
+- name: Add admin user
+  command: >
+    docker exec -i mongo
+    mongo admin --authenticationDatabase admin
+    --eval 'db.createUser( {
+    user: "admin",
+    pwd: "password",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] } )'
   changed_when: false
 
-- name: Ensure admin exists
-  mongodb_user:
-    database: admin
-    login_host: "{{ mongodb_container_ip }}"
-    login_port: "{{ mongodb_port }}"
-    name: "{{ mongodb_admin_user }}"
-    password: "{{ mongodb_admin_password }}"
-    roles: userAdmin,clusterAdmin,userAdminAnyDatabase
-    state: present
-  ignore_errors: true
+# - name: Create users
+#   command: "docker exec -i mongo mongo {{ item.db }}  --authenticationDatabase admin --eval 'db.createUser( { user: \"{{ item.name }}\", pwd: \"{{ item.pass }}\", roles: [ { role: \"{{ item.roles }} | default('readWrite')\", db: \"{{ item.db }}\" } ] } )';"
+#   run_once: true
+#   changed_when: false
+#   with_items: "{{ mongodb_users }}"
 
-- name: Create users
-  mongodb_user:
-    database: "{{ item.db }}"
-    login_host: "{{ mongodb_container_ip }}"
-    login_port: "{{ mongodb_port }}"
-    login_user: "{{ mongodb_admin_user }}"
-    login_password: "{{ mongodb_admin_password }}"
-    name: "{{ item.name }}"
-    password: "{{ item.pass }}"
-    roles: "{{ item.roles | default('readWrite') }}"
-    state: present
-  with_items: "{{ mongodb_users }}"
-  when: mongodb_create_users
+# - name: add container to inventory
+#   add_host:
+#     name: mongo
+#     ansible_connection: docker
+#     ansible_docker_extra_args: "-H=tcp://{{ mongodb_container_address }}:2375"
+#     ansible_user: mongodb
+#   changed_when: false
+#
+
+# - name: Create administrative users
+#   docker_container:
+#     name: mongo
+#     image: mongo:latest
+#     command: "{{ item }}"
+#   run_once: true
+#   changed_when: false
+#   with_items:
+#     - "mongo --authenticationDatabase admin
+#     --eval 'db.createUser( {
+#     user: \"{{mongodb_admin_user }}\",
+#     pwd: \"{{ mongodb_admin_password }}\",
+#     roles: [ { role: \"userAdminAnyDatabase\", db: \"admin\" } ]
+#     });'"
+#   failed_when: true
+
+# - name: Execute commands in docker container
+#   command: docker exec -i mongo bash -c 'mongo --version'
+#   run_once: true
+#   changed_when: false
+#
+
+# - name: Show users
+#   raw: "docker exec -i mongo bash -c mongo --authenticationDatabase admin --eval 'show users'"
+#   run_once: true
+#   changed_when: false
+
+# - name: Ensure admin exists
+#   delegate_to: mongo
+#   mongodb_user:
+#     database: admin
+#     #login_host: "{{ mongodb_container_ip }}"
+#     #login_port: "{{ mongodb_port }}"
+#     name: "{{ mongodb_admin_user }}"
+#     password: "{{ mongodb_admin_password }}"
+#     roles: userAdmin,clusterAdmin,userAdminAnyDatabase
+#     state: present
+#   ignore_errors: true
+
+#- name: Ensure admin exists
+#  mongodb_user:
+#    database: admin
+#    login_host: "{{ mongodb_container_ip }}"
+#    login_port: "{{ mongodb_port }}"
+#    name: "{{ mongodb_admin_user }}"
+#    password: "{{ mongodb_admin_password }}"
+#    roles: userAdmin,clusterAdmin,userAdminAnyDatabase
+#    state: present
+#  ignore_errors: true
+
+# - name: Create users
+#   mongodb_user:
+#     database: "{{ item.db }}"
+#     login_host: "{{ mongodb_container_ip }}"
+#     login_port: "{{ mongodb_port }}"
+#     login_user: "{{ mongodb_admin_user }}"
+#     login_password: "{{ mongodb_admin_password }}"
+#     name: "{{ item.name }}"
+#     password: "{{ item.pass }}"
+#     roles: "{{ item.roles | default('readWrite') }}"
+#     state: present
+#   with_items: "{{ mongodb_users }}"
+#   when: mongodb_create_users

@@ -16,7 +16,7 @@ def test_packages(Package, SystemInfo):
             p = Package(package)
             assert p.is_installed
 
-#
+
 # def test_directories(File):
 #     present = [
 #         "/var/log/mongodb",

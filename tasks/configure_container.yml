@@ -1,5 +1,5 @@
 ---
-- name: Make sure dirs exist
+- name: Create directory
   file:
     path: "{{ item }}"
     state: directory

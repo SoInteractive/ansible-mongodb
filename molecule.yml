@@ -1,6 +1,7 @@
 ---
 ansible:
   playbook: tests/playbook.yml
+  verbose: vvv
 driver:
   name: docker
 verifier:
@@ -15,7 +16,7 @@ docker:
 #      image: centos/systemd
 #      image_version: latest
 #      privileged: true
-    - name: mongo
+    - name: mongo_dind
       image: jpetazzo/dind
       image_version: latest
       privileged: True
