@@ -1,13 +1,51 @@
 ---
-- name: Add admin user
-  command: >
-    docker exec -i mongo
-    mongo admin --authenticationDatabase admin
-    --eval 'db.createUser( {
-    user: "admin",
-    pwd: "password",
-    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] } )'
+- name: Ensure Mongodb admin exists
+  mongodb_user:
+    database: admin
+    login_host: "{{ mongodb_container_address }}"
+    login_port: "{{ mongodb_port }}"
+    name: "{{ mongodb_admin_user }}"
+    password: "{{ mongodb_admin_password }}"
+    roles: userAdmin,clusterAdmin,userAdminAnyDatabase
+    state: present
   changed_when: false
+
+- name: Create Mongodb users
+  mongodb_user:
+    database: "{{ item.db }}"
+    login_host: "{{ mongodb_container_address}}"
+    login_port: "{{ mongodb_port }}"
+    login_user: "{{ mongodb_admin_user }}"
+    login_password: "{{ mongodb_admin_password }}"
+    name: "{{ item.name }}"
+    password: "{{ item.pass }}"
+    roles: "{{ item.roles | default('readWrite') }}"
+    state: present
+  with_items: "{{ mongodb_users }}"
+  when: mongodb_create_users
+
+# - name: Add admin user
+#   command: >
+#     docker exec -i mongo
+#     mongo admin --authenticationDatabase admin
+#     --quiet --eval 'db.createUser( {
+#     user: "admin",
+#     pwd: "password",
+#     roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] } )'
+#   changed_when: false
+#   run_once: true
+#   ignore_error: true
+
+# - name: Add admin user
+#   command: >
+#     mongo admin --authenticationDatabase admin
+#     --quiet --eval 'db.createUser( {
+#     user: "admin",
+#     pwd: "password",
+#     roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] } )'
+#   changed_when: false
+#   run_once: true
+#   ignore_error: true
 
 # - name: Create users
 #   command: "docker exec -i mongo mongo {{ item.db }}  --authenticationDatabase admin --eval 'db.createUser( { user: \"{{ item.name }}\", pwd: \"{{ item.pass }}\", roles: [ { role: \"{{ item.roles }} | default('readWrite')\", db: \"{{ item.db }}\" } ] } )';"
@@ -17,22 +55,20 @@
 
 # - name: add container to inventory
 #   add_host:
-#     name: mongo
+#     name: "{{ mongodb_container_address }}"
 #     ansible_connection: docker
-#     ansible_docker_extra_args: "-H=tcp://{{ mongodb_container_address }}:2375"
 #     ansible_user: mongodb
 #   changed_when: false
-#
 
 # - name: Create administrative users
 #   docker_container:
 #     name: mongo
-#     image: mongo:latest
+# #    image: mongo:latest
 #     command: "{{ item }}"
 #   run_once: true
 #   changed_when: false
 #   with_items:
-#     - "mongo --authenticationDatabase admin
+#     - "mongo admin --authenticationDatabase admin
 #     --eval 'db.createUser( {
 #     user: \"{{mongodb_admin_user }}\",
 #     pwd: \"{{ mongodb_admin_password }}\",
@@ -51,39 +87,15 @@
 #   run_once: true
 #   changed_when: false
 
-# - name: Ensure admin exists
-#   delegate_to: mongo
-#   mongodb_user:
-#     database: admin
-#     #login_host: "{{ mongodb_container_ip }}"
-#     #login_port: "{{ mongodb_port }}"
-#     name: "{{ mongodb_admin_user }}"
-#     password: "{{ mongodb_admin_password }}"
-#     roles: userAdmin,clusterAdmin,userAdminAnyDatabase
-#     state: present
-#   ignore_errors: true
+
 
 #- name: Ensure admin exists
 #  mongodb_user:
 #    database: admin
-#    login_host: "{{ mongodb_container_ip }}"
+#    login_host: "{{ mongodb_container_address }}"
 #    login_port: "{{ mongodb_port }}"
 #    name: "{{ mongodb_admin_user }}"
 #    password: "{{ mongodb_admin_password }}"
 #    roles: userAdmin,clusterAdmin,userAdminAnyDatabase
 #    state: present
 #  ignore_errors: true
-
-# - name: Create users
-#   mongodb_user:
-#     database: "{{ item.db }}"
-#     login_host: "{{ mongodb_container_ip }}"
-#     login_port: "{{ mongodb_port }}"
-#     login_user: "{{ mongodb_admin_user }}"
-#     login_password: "{{ mongodb_admin_password }}"
-#     name: "{{ item.name }}"
-#     password: "{{ item.pass }}"
-#     roles: "{{ item.roles | default('readWrite') }}"
-#     state: present
-#   with_items: "{{ mongodb_users }}"
-#   when: mongodb_create_users

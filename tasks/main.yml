@@ -10,14 +10,10 @@
   tags:
     - always
 
-# - name: Set mongodb address
-#   set_fact:
-#     mongodb_container_address: "{{ hostvars[inventory_hostname]['ansible_eth0']['ipv4']['address'] }}"
-
 - block:
     - include: configure_container.yml
     - include: install_container.yml
-#    - include: auth_method_container.yml
+    #    - include: auth_method_container.yml
     - include: users_container.yml
   when: mongodb_method_install != "binary"
 

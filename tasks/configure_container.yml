@@ -7,10 +7,9 @@
     mode: 0755
   with_items:
     - "/opt/mongodb"
-#  register: dir_creation
 
 - name: Create initial configuration
   template:
     src: mongod_initial.conf.j2
     dest: "/opt/mongodb/mongod.conf.orig"
-#  when: not mongod_config.stat.exists
+    #  when: not mongod_config.stat.exists

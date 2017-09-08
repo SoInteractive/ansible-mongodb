@@ -1,11 +1,4 @@
 ---
-# - name: Make sure data dir exist
-#   file:
-#     path: /opt/mongodb
-#     state: directory
-#     group: docker
-#     mode: 0777
-
 - name: Make sure that docker is installed and running
   service:
     name: docker
@@ -21,5 +14,12 @@
     volumes:
       - "/opt/mongodb:/data/db:rw"
       - "/opt/mongodb/mongod.conf.orig:/etc/mongod.conf.orig:ro"
-#  run_once: true
-#  changed_when: false
+
+- name: Get IP MongoDB instance container
+  shell: "docker inspect -f '{% raw %}{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}{% endraw %}' mongo"
+  register: mongodb_address
+  changed_when: false
+
+- name: "Set fact IP MongoDB instance container"
+  set_fact:
+    mongodb_container_address: "{{ mongodb_address.stdout }}"
