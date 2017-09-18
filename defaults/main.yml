@@ -4,7 +4,7 @@ mongodb_hosts_group: mongodb
 mongodb_version: 3.2
 #mongodb_full_version: 3.2.2
 
-#mongodb_method_install: "binary"
+#mongodb_method_install: binary
 mongodb_method_install: container
 
 mongodb_metrics: true

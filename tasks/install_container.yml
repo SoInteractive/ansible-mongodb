@@ -7,7 +7,7 @@
 - name: Download and run MongoDB instance
   docker_container:
     name: mongo
-    image: "mongo:latest"
+    image: "mongo:{{ mongodb_version }}"
     state: started
     restart_policy: unless-stopped
     ports: "{{ mongodb_port }}:27017"

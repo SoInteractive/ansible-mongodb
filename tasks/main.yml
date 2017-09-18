@@ -15,13 +15,14 @@
     - include: install_container.yml
     #    - include: auth_method_container.yml
     - include: users_container.yml
-  when: mongodb_method_install != "binary"
+  run_once: true
+  when: mongodb_method_install != 'binary'
 
-#- block:
-#    - include: install.yml
-#    - include: configure.yml
-#    - include: users.yml
-#  when: mongodb_method_install = "binary"
+# - block:
+#     - include: install.yml
+#     - include: configure.yml
+#     - include: users.yml
+#   when: mongodb_method_install == 'binary'
 
 #- include: auth_method.yml
 ##  run_once: true
