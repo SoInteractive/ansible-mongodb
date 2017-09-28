@@ -4,13 +4,14 @@
     database: admin
     name: "{{ mongodb_admin_user }}"
     password: "{{ mongodb_admin_password }}"
-    roles: userAdmin,clusterAdmin,userAdminAnyDatabase
+    roles: root
     state: present
   ignore_errors: true
 
 - name: Create users
   mongodb_user:
     database: "{{ item.db }}"
+    replica_set: "{{ mongodb_replica_name | default(omit) }}"
     login_user: "{{ mongodb_admin_user }}"
     login_password: "{{ mongodb_admin_password }}"
     name: "{{ item.name }}"
