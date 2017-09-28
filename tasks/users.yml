@@ -4,7 +4,7 @@
     database: admin
     name: "{{ mongodb_admin_user }}"
     password: "{{ mongodb_admin_password }}"
-    roles: userAdmin,clusterAdmin,userAdminAnyDatabase
+    roles: root
     state: present
   ignore_errors: true
 
