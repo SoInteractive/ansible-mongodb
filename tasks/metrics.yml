@@ -15,7 +15,7 @@
     owner: "{{ mongodb_system_user }}"
     group: "{{ mongodb_system_group }}"
   notify:
-    - restart node_exporter
+    - restart mongodb exporter
 
 - name: Copy the mongodb exporter systemd service file
   template:
@@ -25,7 +25,6 @@
     group: root
     mode: 0644
   notify:
-  - reload systemd
   - restart mongodb exporter
 
 - name: Ensure mongodb exporter is enabled on boot
