@@ -1,0 +1,31 @@
+// {{ ansible_managed }}
+
+//use admin
+{#rs.initiate({
+ _id: '{{ mongodb_replica_name }}',
+ members: [
+   { _id: 0, host: '{{ mongodb_address }}:{{ mongodb_port }}' }
+ ]
+})#}
+
+var initiate = rs.initiate({
+	_id : "{{ mongodb_replica_name }}",
+	members : [
+{%- for host in groups[mongodb_hosts_group] -%}
+		{
+			_id : {{ loop.index0 }},
+	{% if hostvars[host]['mongodb_is_arbiter'] is defined and hostvars[host]['mongodb_is_arbiter']|bool == true %}
+			arbiterOnly : true,
+	{% endif %}
+			host : "{{ hostvars[host].mongodb_address }}:{{ hostvars[host].mongodb_port }}"
+		}
+{%- if not loop.last %},{% endif -%}
+{%- endfor -%}
+	]
+})
+
+if (initiate.ok != 1) {
+  printjson(initiate)
+} else {
+  printjson(rs.conf())
+}

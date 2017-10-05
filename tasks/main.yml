@@ -1,46 +1,114 @@
 ---
-- name: Gather variables for each operating system
-  include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-    - "{{ ansible_distribution | lower }}.yml"
-    - "{{ ansible_os_family | lower }}.yml"
-  tags:
-    - always
+- include: prechecks.yml
 
-- block:
-    - include: configure_container.yml
-    - include: install_container.yml
-    #    - include: auth_method_container.yml
-    - include: users_container.yml
-  run_once: true
-  when: mongodb_method_install != 'binary'
+- name: Ensure mongo system group exists
+  group:
+    name: "{{ mongodb_system_group }}"
+    state: present
+    system: yes
 
-# - block:
-#     - include: install.yml
-#     - include: configure.yml
-#     - include: users.yml
-#   when: mongodb_method_install == 'binary'
+- name: Ensure mongo system user exists
+  user:
+    name: "{{ mongodb_system_user }}"
+    state: present
+    shell: /usr/sbin/nologin
+    system: yes
+    group: "{{ mongodb_system_group }}"
+    createhome: no
 
-#- include: auth_method.yml
-##  run_once: true
-##  delegate_to: "{{ mongodb_main_node }}"
-#  when:
-#    - mongodb_authentication != "SCRAM-SHA-1"
-#    - not mongod_config.stat.exists
+- name: Configuring directories
+  file:
+    state: directory
+    path: "{{ item }}"
+    mode: 0755
+    owner: "{{ mongodb_system_user }}"
+    group: "{{ mongodb_system_group }}"
+  with_items:
+    - "{{ mongodb_data_dir }}"
 
-#- include: replica.yml
-#  when: mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2
-#  run_once: true
-#  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+- name: Ensure configuration file exists
+  template:
+    src: mongod.conf.j2
+    dest: "{{ mongodb_conf_dir }}/mongod.conf"
+    owner: "{{ mongodb_system_user }}"
+    group: "{{ mongodb_system_group }}"
 
-#- include: users_container.yml
-#  run_once: true
-#  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+- name: Test for existing keyfile
+  stat:
+    path: "{{ mongodb_conf_dir }}/keyfile"
+  register: keyfile
 
-#- include: security_container.yml
+- include: bootstrap.yml
+  when: not keyfile.stat.exists
 
-#- include: metrics.yml
-#  when: mongodb_metrics
+- name: Check if replica is configured
+  command: "docker exec mongo bash -c \"mongo admin -u {{ mongodb_admin.user }} -p {{ mongodb_admin.pass }} --eval 'rs.status();'\""
+  no_log: True
+  register: replica_status
+  changed_when: False
+  ignore_errors: True
+  when: mongodb_replica_name != ''
+  tags: skip_ansible_lint
+
+- name: Evaluate replica status
+  set_fact:
+    start_replica: "{{ not '_id\" : ' + (groups[mongodb_hosts_group] | length -1)|string in replica_status.stdout }}"
+  when: mongodb_replica_name != ''
+
+- include: replica.yml
+  when:
+  - mongodb_replica_name != ''
+  - start_replica
+
+- name: Ensure mongodb containers are running
+  docker_container:
+    name: mongo
+    image: "mongo:{{ mongodb_version }}"
+    state: started
+    user: "{{ mongodb_system_user }}"
+    command: "mongod --config /etc/mongod.conf --smallfiles"
+    restart_policy: always
+    ports: "{{ mongodb_port }}:27017"
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - "{{ mongodb_data_dir }}:/data/db:rw"
+    - "{{ mongodb_conf_dir }}/mongod.conf:/etc/mongod.conf:ro"
+    - "{{ mongodb_conf_dir }}/keyfile:/keyfile:ro"
+  register: start_mongo
+
+- name: Wait for mongo
+  pause:
+    seconds: 10
+  when: start_mongo | changed
+
+- include: metrics.yml
+  when: mongodb_metrics
+
+- name: Update admin password
+  mongodb_user:
+    database: admin
+    login_port: "{{ mongodb_port }}"
+    name: "{{ mongodb_admin.user }}"
+    password: "{{ mongodb_admin.pass }}"
+    update_password: always
+    roles: root
+    state: present
+  when: mongodb_passwords_update
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+  run_once: yes
+
+- name: Ensure users and databases exist
+  mongodb_user:
+    login_host: "{{ mongodb_address }}"
+    login_user: "{{ mongodb_admin.user }}"
+    login_password: "{{ mongodb_admin.pass }}"
+    replica_set: "{{ mongodb_replica_name | default(omit) }}"
+    name: "{{ item.key }}"
+    database: "{{ item.value.db }}"
+    password: "{{ item.value.pass }}"
+    update_password: "{{ 'always' if mongodb_passwords_update else 'on_create' }}"
+    roles: "{{ item.value.roles | default('readWrite') }}"
+    state: present
+  with_dict: "{{ mongodb_users }}"
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+  run_once: yes

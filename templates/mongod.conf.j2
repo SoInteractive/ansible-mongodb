@@ -1,28 +1,44 @@
 # {{ ansible_managed }}
 
-systemLog:
-  destination: file
-  path: {{ mongodb_log_dir }}/mongodb.log
-  logAppend: true
+# mongod.conf
 
+# for documentation of all options, see:
+#   http://docs.mongodb.org/manual/reference/configuration-options/
+
+# Where and how to store data.
 storage:
-  dbPath: {{ mongodb_database_dir }}
+  dbPath: /data/db
   journal:
     enabled: true
 
-#processManagement:
-#  fork: true
+# where to write logging data.
+systemLog:
+  destination: file
+  logAppend: true
+  path: /var/log/mongodb/mongod.log
 
+# network interfaces
 net:
-  port: {{ mongodb_port }}
-  bindIp: localhost{{ "," + mongodb_address if not mongodb_address.startswith('127') else "" }}
+  port: 27017
+  bindIp: 0.0.0.0
+
+#processManagement:
 
 security:
-  keyFile: /etc/mongo_key
+  keyFile: /keyfile
   authorization: enabled
+
+#operationProfiling:
 
 {% if mongodb_replica_name != None and groups[mongodb_hosts_group] | length > 2 %}
 replication:
   replSetName: {{ mongodb_replica_name }}
 {% endif %}
 
+#sharding:
+
+## Enterprise-Only Options:
+
+#auditLog:
+
+#snmp:
