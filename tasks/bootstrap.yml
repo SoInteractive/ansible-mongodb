@@ -12,6 +12,8 @@
     mode: 0600
     owner: "{{ mongodb_system_user }}"
     group: "{{ mongodb_system_group }}"
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
 
 - block:
   - name: Download keyfile content
