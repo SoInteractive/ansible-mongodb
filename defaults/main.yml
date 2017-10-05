@@ -28,5 +28,5 @@ mongodb_users:
 
 mongodb_metrics: true
 mongodb_exporter_version: "1.0.0"
-#mongodb_exporter_config:
+mongodb_exporter_config: {}
 #  'log_dir': '/var/log/mongo_exporter'
