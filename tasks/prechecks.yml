@@ -8,8 +8,13 @@
   fail:
     msg: "Change number of nodes or disable replication"
   when:
-    - groups[mongodb_hosts_group] | length is even
-    - mongodb_replica_name != ""
+  - groups[mongodb_hosts_group] | length is even
+  - mongodb_replica_name != ""
+
+- name: Check if mongodb_users is in correct format
+  fail:
+    msg: "Change mongodb_users variable format, it should be a dictionary"
+  when: mongodb_users is not mapping
 
 - name: Set mongodb address so it can be accessed in host facts
   set_fact:
@@ -38,16 +43,5 @@
   set_fact:
     mongodb_contenerized: true
   when:
-    - groups[mongodb_hosts_group] | length > 2
-    - mongodb_replica_name != ''
-
-- name: Gather variables for each operating system
-  include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
-    - "{{ ansible_distribution | lower }}.yml"
-    - "{{ ansible_os_family | lower }}.yml"
-  tags:
-    - always
+  - groups[mongodb_hosts_group] | length > 2
+  - mongodb_replica_name != ''

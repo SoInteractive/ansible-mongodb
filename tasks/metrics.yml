@@ -1,11 +1,9 @@
 ---
 - name: Download mongodb exporter binary to local folder
   become: no
-  unarchive:
-    src: "https://github.com/dcu/mongodb_exporter/releases/download/v{{ mongodb_exporter_version }}/mongodb_exporter-linux-amd64"
+  get_url:
+    url: "https://github.com/dcu/mongodb_exporter/releases/download/v{{ mongodb_exporter_version }}/mongodb_exporter-linux-amd64"
     dest: "/tmp"
-    remote_src: yes
-    creates: "/tmp/mongodb_exporter-linux-amd64"
   run_once: true
   delegate_to: localhost
 
