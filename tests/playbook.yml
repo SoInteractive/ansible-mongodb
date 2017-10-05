@@ -5,6 +5,7 @@
       package:
         name: "{{ item }}"
         state: present
+      retries: 5
       with_items:
 #        - iproute
 #        - net-tools
@@ -15,6 +16,7 @@
         name:
           - docker-py
           - pymongo
+      retries: 5
 
 #- hosts: single-bare
 #  roles:
