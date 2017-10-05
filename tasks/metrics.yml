@@ -30,5 +30,5 @@
 
 - name: Ensure mongodb exporter is enabled on boot
   service:
-    name: mongodb exporter
+    name: mongodb_exporter
     enabled: yes
