@@ -25,9 +25,11 @@
     - mongodb
   vars:
     mongodb_hosts_group: single-container
+    mongodb_metrics: false
 
 - hosts: replica
   roles:
     - mongodb
   vars:
     mongodb_hosts_group: replica
+    mongodb_metrics: false
