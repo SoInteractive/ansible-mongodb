@@ -24,15 +24,9 @@
   set_fact:
     mongodb_port: "{{ mongodb_port }}"
 
-- name: Convert SCRAM-SHA-1 to number for futher usage
+- name: Convert mongo_authentication to number for futher usage
   set_fact:
-    schema_version: 5
-  when: mongodb_authentication == "SCRAM-SHA-1"
-
-- name: Convert MONGODB-CR to number for futher usage
-  set_fact:
-    schema_version: 3
-  when: mongodb_authentication == "MONGODB-CR"
+    schema_version: "{{ '3' if mongodb_authentication == 'MONGODB-CR' else '5' }}"
 
 - name: Unset mongodb_replica_name due to insufficient host number
   set_fact:
