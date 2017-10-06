@@ -6,12 +6,42 @@ driver:
 verifier:
   name: testinfra
 docker:
+  network:
+    - name: mongo
+      driver: bridge
   containers:
-    - name: mongodb-xenial
-      image: solita/ubuntu-systemd
-      image_version: 16.04
-      privileged: true
+#    - name: mongodb-xenial
+#      image: solita/ubuntu-systemd
+#      image_version: 16.04
+#      privileged: true
 #    - name: mongodb-centos
 #      image: centos/systemd
 #      image_version: latest
 #      privileged: true
+    - name: mongo-single
+      image: jpetazzo/dind
+      image_version: latest
+      privileged: True
+      ansible_groups:
+      - single-container
+    - name: mongo-node01
+      image: jpetazzo/dind
+      image_version: latest
+      privileged: True
+      network_mode: mongo
+      ansible_groups:
+      - replica
+    - name: mongo-node02
+      image: jpetazzo/dind
+      image_version: latest
+      privileged: True
+      network_mode: mongo
+      ansible_groups:
+      - replica
+    - name: mongo-node03
+      image: jpetazzo/dind
+      image_version: latest
+      privileged: True
+      network_mode: mongo
+      ansible_groups:
+      - replica

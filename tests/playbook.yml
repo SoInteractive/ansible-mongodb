@@ -5,13 +5,33 @@
       package:
         name: "{{ item }}"
         state: present
+      retries: 5
       with_items:
-        - iproute
-        - net-tools
+#        - iproute
+#        - net-tools
+        - python-pip
 
-- hosts: all
+    - name: Install pip dependencies
+      pip:
+        name:
+          - docker-py
+          - pymongo
+      retries: 5
+
+#- hosts: single-bare
+#  roles:
+#    - mongodb
+
+- hosts: single-container
   roles:
     - mongodb
   vars:
-    mongodb_address: "127.0.0.1:27017"
-    mongodb_exporter_web_listen_address: "127.0.0.1:9001"
+    mongodb_hosts_group: single-container
+    mongodb_metrics: false
+
+- hosts: replica
+  roles:
+    - mongodb
+  vars:
+    mongodb_hosts_group: replica
+    mongodb_metrics: false

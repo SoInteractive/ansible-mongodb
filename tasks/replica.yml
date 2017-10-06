@@ -1,44 +1,54 @@
----
-# Pauses are crucial
-- name: Wait a moment
-  pause:
-    seconds: 10
+- name: Stop mongodb containers
+  docker_container:
+    name: mongo
+    state: stopped
+  ignore_errors: true
 
-- meta: flush_handlers
+- name: Copy replica initialization script
+  template:
+    src: "{{ item }}.j2"
+    dest: "/tmp/{{ item }}"
+  with_items:
+  - replica_init.js
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
 
-- name: Wait a little bit more
-  pause:
-    prompt: "Wait for mongo"
-    seconds: 10
-
-- name: Check if replica is configured
-  command: "mongo {{ mongodb_replica_name }} --eval 'rs.conf();'"
-  register: replica_conf
-  ignore_errors: True
-  tags: skip_ansible_lint
+- name: Bootstrap mongo for replica creation
+  docker_container:
+    name: mongo-initialize
+    image: "mongo:{{ mongodb_version }}"
+    command: "mongod --replSet {{ mongodb_replica_name }} --smallfiles"
+    state: started
+    user: "{{ mongodb_system_user }}"
+    ports: "{{ mongodb_port }}:27017"
+    volumes:
+    - "{{ mongodb_data_dir }}:/data/db:rw"
+    - "{{ mongodb_conf_dir }}/keyfile:/opt/keyfile:ro"
+    - "/tmp/replica_init.js:/tmp/replica_init.js:ro"
 
 - block:
-  - name: Start replica set
-    command: "mongo {{ mongodb_replica_name }} --eval 'rs.initiate();'"
-
-  - name: Get arbiter address
-    set_fact:
-      arbiter_address: "{{ hostvars[mongodb_replica_arbiter]['ansible_' + mongodb_interface]['ipv4']['address'] }}"
-
-  - name: Add arbiter node
-    command: "mongo {{ mongodb_replica_name }} --eval 'rs.addArb(\"{{ arbiter_address }}\");'"
-    when: mongodb_replica_arbiter != None
-
-#  - set_fact:
-#      mongodb_replica_secondary_nodes:
-#    when: mongodb_replica_secondary_nodes == None
-
-  - name: Add data nodes
-    command: "mongo {{ mongodb_replica_name }} --eval 'rs.add(\"{{ hostvars[item]['ansible_' + mongodb_interface]['ipv4']['address'] }}\");'"
-    with_items: "{{ mongodb_replica_secondary_nodes }}"
-
-  - name: Wait for election to finish
+  - name: Wait for mongo to start
     pause:
       seconds: 5
 
-  when: "'no replset config has been received' in replica_conf.stdout"
+  - name: Replica initialization
+    command: "docker exec mongo-initialize bash -c 'mongo admin /tmp/replica_init.js'"
+
+  - name: Wait for mongo to initialize replica
+    pause:
+      seconds: 5
+
+  - name: Check if replica initialization was successfull
+    command: "docker exec mongo-initialize bash -c \"mongo admin --eval 'rs.status();'\""
+    register: replica_status
+    until: "'_id\" : {{ groups[mongodb_hosts_group] | length -1 }}' in replica_status.stdout"
+    delay: 2
+    retries: 30
+
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+
+- name: Stop bootstraping containers
+  docker_container:
+    name: mongo-initialize
+    state: absent

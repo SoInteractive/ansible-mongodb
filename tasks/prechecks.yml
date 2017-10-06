@@ -1,0 +1,41 @@
+---
+- name: Fail when running on wrong hosts group
+  fail:
+    msg: "Ansible inventory doesn't containt group defined in mongodb_hosts_group variable"
+  when: mongodb_hosts_group not in groups
+
+- name: Fail when setting replica on even number of nodes
+  fail:
+    msg: "Change number of nodes or disable replication"
+  when:
+  - groups[mongodb_hosts_group] | length is even
+  - mongodb_replica_name != ""
+
+- name: Check if mongodb_users is in correct format
+  fail:
+    msg: "Change mongodb_users variable format, it should be a dictionary"
+  when: mongodb_users is not mapping
+
+- name: Set mongodb address so it can be accessed in host facts
+  set_fact:
+    mongodb_address: "{{ mongodb_address }}"
+
+- name: Set mongodb port so it can be accessed in host facts
+  set_fact:
+    mongodb_port: "{{ mongodb_port }}"
+
+- name: Convert mongo_authentication to number for futher usage
+  set_fact:
+    schema_version: "{{ '3' if mongodb_authentication == 'MONGODB-CR' else '5' }}"
+
+- name: Unset mongodb_replica_name due to insufficient host number
+  set_fact:
+    mongodb_replica_name: ''
+  when: groups[mongodb_hosts_group] | length < 3
+
+- name: Run mongo in containers since we are running replica
+  set_fact:
+    mongodb_contenerized: true
+  when:
+  - groups[mongodb_hosts_group] | length > 2
+  - mongodb_replica_name != ''

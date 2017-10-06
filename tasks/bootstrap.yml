@@ -1,0 +1,77 @@
+---
+- name: Create keyfile
+  shell: "openssl rand -base64 756 > {{ mongodb_conf_dir }}/keyfile"
+  args:
+    creates: "{{ mongodb_conf_dir }}/keyfile"
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+
+- name: Ensure correct keyfile permission
+  file:
+    path: "{{ mongodb_conf_dir }}/keyfile"
+    mode: 0600
+    owner: "{{ mongodb_system_user }}"
+    group: "{{ mongodb_system_group }}"
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+
+- block:
+  - name: Download keyfile content
+    slurp:
+      src: "{{ mongodb_conf_dir }}/keyfile"
+    register: keyfile_content
+    run_once: true
+    delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+
+  - name: Propagate keyfile
+    copy:
+      content: "{{ keyfile_content['content'] | b64decode }}"
+      dest: "{{ mongodb_conf_dir }}/keyfile"
+      mode: 0600
+      owner: "{{ mongodb_system_user }}"
+      group: "{{ mongodb_system_group }}"
+  when: groups[mongodb_hosts_group] | length > 2
+
+- block:
+  - name: Copy administration script to change auth schema
+    template:
+      src: "auth_schema.js.j2"
+      dest: "/tmp/auth_schema.js"
+
+  - name: Run initialization container for auth_schema and admin user creation
+    docker_container:
+      name: mongo-initialize
+      image: "mongo:{{ mongodb_version }}"
+      command: "mongod --smallfiles"
+      state: started
+      user: "{{ mongodb_system_user }}"
+      ports: "{{ mongodb_port }}:27017"
+      volumes:
+      - "{{ mongodb_data_dir }}:/data/db:rw"
+      - "{{ mongodb_conf_dir }}/keyfile:/opt/keyfile:ro"
+      - "/tmp/auth_schema.js:/tmp/auth_schema.js:ro"
+
+  - name: Wait for mongo initialization
+    pause:
+      seconds: 2
+
+  - name: Set authentication schema
+    command: "docker exec mongo-initialize bash -c 'mongo admin /tmp/auth_schema.js'"
+
+  - name: Create admin user
+    mongodb_user:
+      database: admin
+      login_port: "{{ mongodb_port }}"
+      name: "{{ mongodb_admin.user }}"
+      password: "{{ mongodb_admin.pass }}"
+      update_password: "{{ 'always' if mongodb_passwords_update else 'on_create' }}"
+      roles: root
+      state: present
+    ignore_errors: true
+
+  - name: Stop bootstraping container
+    docker_container:
+      name: mongo-initialize
+      state: absent
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
