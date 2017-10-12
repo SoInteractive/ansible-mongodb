@@ -15,7 +15,6 @@
       pip:
         name:
           - docker-py
-          - pymongo
       retries: 5
 
 #- hosts: single-bare
@@ -27,11 +26,11 @@
     - mongodb
   vars:
     mongodb_hosts_group: single-container
-    mongodb_metrics: false
+#    mongodb_metrics: false
 
 - hosts: replica
   roles:
     - mongodb
   vars:
     mongodb_hosts_group: replica
-    mongodb_metrics: false
+#    mongodb_metrics: false

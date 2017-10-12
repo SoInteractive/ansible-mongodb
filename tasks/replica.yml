@@ -2,6 +2,7 @@
   docker_container:
     name: mongo
     state: stopped
+    keep_volumes: True
   ignore_errors: true
 
 - name: Copy replica initialization script
@@ -19,20 +20,25 @@
     image: "mongo:{{ mongodb_version }}"
     command: "mongod --replSet {{ mongodb_replica_name }} --smallfiles"
     state: started
-    user: "{{ mongodb_system_user }}"
     ports: "{{ mongodb_port }}:27017"
     volumes:
-    - "{{ mongodb_data_dir }}:/data/db:rw"
-    - "{{ mongodb_conf_dir }}/keyfile:/opt/keyfile:ro"
+    - "mongo_data:/data/db"
+    - "mongodb_config:/data/configdb"
     - "/tmp/replica_init.js:/tmp/replica_init.js:ro"
 
 - block:
   - name: Wait for mongo to start
-    pause:
-      seconds: 5
+    wait_for:
+      host: localhost
+      port: "{{ mongodb_port }}"
+      delay: 5
+      timeout: 60
 
   - name: Replica initialization
     command: "docker exec mongo-initialize bash -c 'mongo admin /tmp/replica_init.js'"
+    register: result
+    retries: 5
+    until: result | success
 
   - name: Wait for mongo to initialize replica
     pause:
@@ -52,3 +58,4 @@
   docker_container:
     name: mongo-initialize
     state: absent
+    keep_volumes: True
