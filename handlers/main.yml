@@ -4,3 +4,4 @@
     daemon_reload: yes
     name: mongodb_exporter
     state: restarted
+  when: ansible_virtualization_type != 'docker'

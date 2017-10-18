@@ -1,0 +1,29 @@
+---
+- name: Update admin password
+  mongodb_user:
+    database: admin
+    login_port: "{{ mongodb_port }}"
+    name: "{{ mongodb_admin.user }}"
+    password: "{{ mongodb_admin.pass }}"
+    update_password: always
+    roles: root
+    state: present
+  when: mongodb_passwords_update
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+  run_once: yes
+
+- name: Ensure users and databases exist
+  mongodb_user:
+    login_host: "{{ mongodb_address }}"
+    login_user: "{{ mongodb_admin.user }}"
+    login_password: "{{ mongodb_admin.pass }}"
+    replica_set: "{{ mongodb_replica_name | default(omit) }}"
+    name: "{{ item.key }}"
+    database: "{{ item.value.db }}"
+    password: "{{ item.value.pass }}"
+    update_password: "{{ 'always' if mongodb_passwords_update else 'on_create' }}"
+    roles: "{{ item.value.roles | default('readWrite') }}"
+    state: present
+  with_dict: "{{ mongodb_users }}"
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+  run_once: yes

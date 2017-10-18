@@ -1,24 +1,20 @@
 ---
-- name: Create keyfile
-  shell: "openssl rand -base64 756 > {{ mongodb_conf_dir }}/keyfile"
-  args:
-    creates: "{{ mongodb_conf_dir }}/keyfile"
-  run_once: true
-  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+- name: Create configuration file
+  template:
+    src: mongod.conf.j2
+    dest: "/tmp/mongod.conf"
 
-- name: Ensure correct keyfile permission
-  file:
-    path: "{{ mongodb_conf_dir }}/keyfile"
-    mode: 0600
-    owner: "{{ mongodb_system_user }}"
-    group: "{{ mongodb_system_group }}"
+- name: Create keyfile
+  shell: "openssl rand -base64 756 > /tmp/keyfile"
+  args:
+    creates: "/tmp/keyfile"
   run_once: true
   delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
 
 - block:
   - name: Download keyfile content
     slurp:
-      src: "{{ mongodb_conf_dir }}/keyfile"
+      src: "/tmp/keyfile"
     register: keyfile_content
     run_once: true
     delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
@@ -26,52 +22,71 @@
   - name: Propagate keyfile
     copy:
       content: "{{ keyfile_content['content'] | b64decode }}"
-      dest: "{{ mongodb_conf_dir }}/keyfile"
-      mode: 0600
-      owner: "{{ mongodb_system_user }}"
-      group: "{{ mongodb_system_group }}"
-  when: groups[mongodb_hosts_group] | length > 2
+      dest: "/tmp/keyfile"
+  when: groups[mongodb_hosts_group] | length > 1
 
-- block:
-  - name: Copy administration script to change auth schema
-    template:
-      src: "auth_schema.js.j2"
-      dest: "/tmp/auth_schema.js"
+- name: Copy administration script to change auth schema
+  template:
+    src: "auth_schema.js.j2"
+    dest: "/tmp/auth_schema.js"
 
-  - name: Run initialization container for auth_schema and admin user creation
-    docker_container:
-      name: mongo-initialize
-      image: "mongo:{{ mongodb_version }}"
-      command: "mongod --smallfiles"
-      state: started
-      user: "{{ mongodb_system_user }}"
-      ports: "{{ mongodb_port }}:27017"
-      volumes:
-      - "{{ mongodb_data_dir }}:/data/db:rw"
-      - "{{ mongodb_conf_dir }}/keyfile:/opt/keyfile:ro"
-      - "/tmp/auth_schema.js:/tmp/auth_schema.js:ro"
+- name: Run initialization container
+  docker_container:
+    name: mongo-initialize
+    image: "mongo:{{ mongodb_version }}"
+    command: "mongod --smallfiles"
+    state: started
+    ports: "{{ mongodb_port }}:27017"
+    volumes:
+    - "mongo_data:/data/db:rw"
+    - "mongo_config:/data/configdb:rw"
+    - "/tmp/auth_schema.js:/tmp/auth_schema.js:ro"
 
-  - name: Wait for mongo initialization
-    pause:
-      seconds: 2
+- name: Wait for mongo
+  wait_for:
+    host: localhost
+    port: "{{ mongodb_port }}"
+    delay: 5
+    timeout: 60
 
-  - name: Set authentication schema
-    command: "docker exec mongo-initialize bash -c 'mongo admin /tmp/auth_schema.js'"
-
-  - name: Create admin user
-    mongodb_user:
-      database: admin
-      login_port: "{{ mongodb_port }}"
-      name: "{{ mongodb_admin.user }}"
-      password: "{{ mongodb_admin.pass }}"
-      update_password: "{{ 'always' if mongodb_passwords_update else 'on_create' }}"
-      roles: root
-      state: present
-    ignore_errors: true
-
-  - name: Stop bootstraping container
-    docker_container:
-      name: mongo-initialize
-      state: absent
+- name: Set authentication schema
+  command: "docker exec mongo-initialize bash -c 'mongo admin /tmp/auth_schema.js'"
+  register: result
+  retries: 5
+  until: result | success
   run_once: true
   delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+  tags: skip_ansible_lint
+
+- name: Propagate keyfile and configuration file
+  command: "docker cp /tmp/{{ item }} mongo-initialize:/data/configdb/{{ item }}"
+  with_items:
+  - keyfile
+  - mongod.conf
+  tags: skip_ansible_lint
+
+- name: Change mongo files ownership
+  command: "docker exec mongo-initialize bash -c 'chown mongodb:mongodb /data/configdb/*'"
+  tags: skip_ansible_lint
+
+- name: Change keyfile permissions
+  command: "docker exec mongo-initialize bash -c 'chmod 0600 /data/configdb/keyfile'"
+  tags: skip_ansible_lint
+
+- name: Create admin user
+  mongodb_user:
+    database: admin
+    login_port: "{{ mongodb_port }}"
+    name: "{{ mongodb_admin.user }}"
+    password: "{{ mongodb_admin.pass }}"
+    update_password: "{{ 'always' if mongodb_passwords_update else 'on_create' }}"
+    roles: root
+    state: present
+  run_once: true
+  delegate_to: "{{ groups[mongodb_hosts_group][0] }}"
+
+- name: Stop bootstraping container
+  docker_container:
+    name: mongo-initialize
+    state: absent
+    keep_volumes: true

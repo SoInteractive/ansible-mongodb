@@ -12,8 +12,6 @@
     src: "/tmp/mongodb_exporter-linux-amd64"
     dest: "/opt/mongodb_exporter"
     mode: 0755
-    owner: "{{ mongodb_system_user }}"
-    group: "{{ mongodb_system_group }}"
   notify:
     - restart mongodb exporter
 
@@ -31,3 +29,4 @@
   service:
     name: mongodb_exporter
     enabled: yes
+  when: ansible_virtualization_type != 'docker'
