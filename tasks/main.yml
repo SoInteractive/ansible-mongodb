@@ -1,6 +1,11 @@
 ---
 - include: prechecks.yml
 
+- name: Ensure pip is installed
+  package:
+    name: python-pip
+    state: present
+
 - name: Ensure pymongo is installed
   pip:
     name: pymongo
