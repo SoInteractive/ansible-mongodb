@@ -23,7 +23,7 @@
     ports: "{{ mongodb_port }}:27017"
     volumes:
     - "mongo_data:/data/db"
-    - "mongodb_config:/data/configdb"
+    - "mongo_config:/data/configdb"
     - "/tmp/replica_init.js:/tmp/replica_init.js:ro"
 
 - block:
