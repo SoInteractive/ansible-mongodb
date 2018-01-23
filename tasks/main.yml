@@ -53,6 +53,8 @@
   docker_container:
     name: mongo
     image: "mongo:{{ mongodb_version }}"
+    labels:
+      namespace: database
     state: started
     command: "mongod --config /data/configdb/mongod.conf --smallfiles"
     user: mongodb
