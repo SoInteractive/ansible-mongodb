@@ -2,7 +2,6 @@
 mongodb_hosts_group: mongodb
 
 mongodb_version: 3.2
-#mongodb_contenerized: true
 
 mongodb_address: "{{ ansible_default_ipv4.address }}"
 mongodb_port: 27017

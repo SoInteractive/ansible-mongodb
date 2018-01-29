@@ -32,10 +32,3 @@
   set_fact:
     mongodb_replica_name: ''
   when: groups[mongodb_hosts_group] | length < 3
-
-- name: Run mongo in containers since we are running replica
-  set_fact:
-    mongodb_contenerized: true
-  when:
-  - groups[mongodb_hosts_group] | length > 2
-  - mongodb_replica_name != ''
