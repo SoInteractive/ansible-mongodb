@@ -7,6 +7,10 @@ Ansible Role: mongodb
 
 Provision one- or multi-node mongodb cluster
 
+# :warning: IMPORTANT NOTICE
+
+THIS PROJECT IS ABANDONED. WE DO NOT ACCEPT ANY NEW ISSUES AND/OR PULL REQUESTS.
+
 Mongodb exporter metrics
 ------------------------
 
