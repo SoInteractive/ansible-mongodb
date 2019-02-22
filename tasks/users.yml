@@ -18,7 +18,7 @@
     login_user: "{{ mongodb_admin.user }}"
     login_password: "{{ mongodb_admin.pass }}"
     replica_set: "{{ mongodb_replica_name | default(omit) }}"
-    name: "{{ item.key }}"
+    name: "{{ item.value.user if item.value.user is defined else item.key }}"
     database: "{{ item.value.db }}"
     password: "{{ item.value.pass }}"
     update_password: "{{ 'always' if mongodb_passwords_update else 'on_create' }}"
