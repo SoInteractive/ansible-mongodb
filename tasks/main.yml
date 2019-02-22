@@ -36,17 +36,17 @@
   register: replica_status
   changed_when: False
   ignore_errors: True
-  when: mongodb_replica_name != ''
+  when: mongodb_replica_name | length > 0
   tags: skip_ansible_lint
 
 - name: Evaluate replica status
   set_fact:
     start_replica: "{{ not '_id\" : ' + (groups[mongodb_hosts_group] | length -1)|string in replica_status.stdout }}"
-  when: mongodb_replica_name != ''
+  when: mongodb_replica_name | length > 0
 
 - include: replica.yml
   when:
-  - mongodb_replica_name != ''
+  - mongodb_replica_name | length > 0
   - start_replica
 
 - name: Ensure mongodb containers are running

@@ -9,7 +9,7 @@
     msg: "Change number of nodes or disable replication"
   when:
   - groups[mongodb_hosts_group] | length is even
-  - mongodb_replica_name != ""
+  - mongodb_replica_name | length > 0
 
 - name: Check if mongodb_users is in correct format
   fail:
